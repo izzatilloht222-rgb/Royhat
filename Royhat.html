@@ -1,9 +1,9 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="uz">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>To'ylar va Marosimlar Hisob Tizimi v5.7</title>
+    <title>To'ylar va Marosimlar Hisob Tizimi</title>
     <style>
         :root {
             --primary: #2c3e50;
@@ -198,7 +198,7 @@
 <body>
 
 <div class="container">
-    <h2>To'y va Marosimlar Hisob Tizimi 🔐 (Admin Panel v5.7)</h2>
+    <h2>To'y va Marosimlar Hisob Tizimi 🔐 (Admin Panel v6.0)</h2>
     
     <div class="grid">
         <div>
@@ -339,8 +339,8 @@
 </div>
 
 <script>
-    // 🔗 O'ZINGIZNING APP SCRIPT `/exec` HAVOLANGIZNI SHU YERGA QO'YING:
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwWXdPcNe-zJnplY9XarCfRGq6i8rUB99vlkMznYGMpUlBiU42XFKkFsinNMrKpgEZqUw/exec";
+    // 🔗 APPS SCRIPT'DAN OLINGAN YANGA EXEC HAVOLASINI MANA SHU YERGA QO'YING:
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyHV_OH_urip2bKkuQif21K2JavcbH1GrUgzQRqhm-FWS_tWrXew1KL_EE1zEV2YrFM2A/exec";
 
     const ADMINLAR = {
         "Izzatilloh": "26082010",
@@ -371,14 +371,17 @@
         const selectForm = document.getElementById('kamerachiEgasi');
         const selectFiltr = document.getElementById('filtrKamerachi');
         const konteyner = document.getElementById('odamlarRo_yxatiKonteyner');
+        
         let joriyTanlangan = selectForm.value;
         selectForm.innerHTML = '';
         odamlar.forEach(odam => { selectForm.innerHTML += `<option value="${odam}">${odam}</option>`; });
         if(joriyTanlangan) selectForm.value = joriyTanlangan;
+        
         let joriyFiltr = selectFiltr.value || "Hammasi";
         selectFiltr.innerHTML = '<option value="Hammasi">-- Barcha to\'ylar ro\'yxati --</option>';
         odamlar.forEach(odam => { selectFiltr.innerHTML += `<option value="${odam}">${odam}</option>`; });
         selectFiltr.value = joriyFiltr;
+        
         konteyner.innerHTML = '';
         odamlar.forEach(odam => {
             const deleteBtn = odam !== "O'zim" ? `<button class="btn-mini-delete" onclick="odamOchirish('${odam}')">O'chirish</button>` : '';
@@ -423,7 +426,8 @@
             window[callbackId] = function(data) {
                 resolve(data);
                 delete window[callbackId];
-                document.body.removeChild(script);
+                const s = document.getElementById(callbackId);
+                if (s) document.body.removeChild(s);
             };
             
             let queryString = '?callback=' + callbackId;
@@ -432,11 +436,13 @@
             }
             
             const script = document.createElement('script');
+            script.id = callbackId;
             script.src = url + queryString;
             script.onerror = function() {
-                reject(new Error("Ulanishda xato yuz berdi."));
+                reject(new Error("Tarmoqqa ulanishda xato."));
                 delete window[callbackId];
-                document.body.removeChild(script);
+                const s = document.getElementById(callbackId);
+                if (s) document.body.removeChild(s);
             };
             document.body.appendChild(script);
         });
@@ -476,7 +482,7 @@
 
     function yuklash() {
         const tableBody = document.querySelector('#toyTable tbody');
-        tableBody.innerHTML = '<tr><td colspan="13" style="text-align:center;">Yuklanmoqda...</td></tr>';
+        tableBody.innerHTML = '<tr><td colspan="13" style="text-align:center;">Yuklanmoqda... Axborot oqimi yangilanmoqda...</td></tr>';
         
         jsonpRequest(WEB_APP_URL, { action: "get", _ts: Date.now() })
         .then(toylar => {
@@ -485,6 +491,11 @@
             const filtr = document.getElementById('filtrKamerachi').value;
             let tushgan = 0, qarz = 0, jamiSyomka = 0;
             
+            if(!toylar || toylar.length === 0) {
+                 tableBody.innerHTML = '<tr><td colspan="13" style="text-align:center;">Hozircha tizimda hech qanday buyurtma mavjud emas. Birinchi ma\'lumotni kiritib ko\'ring!</td></tr>';
+                 return;
+            }
+
             toylar.sort((a, b) => new Date(a.Sana) - new Date(b.Sana));
 
             toylar.forEach(toy => {
@@ -521,7 +532,7 @@
             document.getElementById('totalSyomka').innerText = jamiSyomka;
         })
         .catch(err => {
-            tableBody.innerHTML = '<tr><td colspan="13" style="text-align:center; color:red;">Hozircha jadval bo\'sh yoki ulanishda xato. Ma\'lumot qo\'shib ko\'ring!</td></tr>';
+            tableBody.innerHTML = '<tr><td colspan="13" style="text-align:center; color:red;">Google serveriga ulanish imkoni bo\'lmadi. Apps Script ruxsatnomalarini tekshiring!</td></tr>';
         });
     }
 
@@ -537,13 +548,13 @@
     }
     function changeLocation(id, joriyXom, joriyTayyor) {
         if (!adminTekshirish()) return;
-        const yangiXom = prompt("Yangi XOM joylashuvi:", joriyXom); if (yangiXom === null) return;
-        const yangiTayyor = prompt("Yangi TAYYOR joylashuvi:", joriyTayyor); if (yangiTayyor === null) return;
+        const yangiXom = prompt("Yangi XOM material joylashuvi:", joriyXom); if (yangiXom === null) return;
+        const yangiTayyor = prompt("Yangi TAYYOR material joylashuvi:", joriyTayyor); if (yangiTayyor === null) return;
         jsonpRequest(WEB_APP_URL, { action: "update", type: "joylashuvlar", id: id, xom: yangiXom, tayyor: yangiTayyor }).then(() => yuklash());
     }
     function ochirish(id) {
         if (!adminTekshirish()) return;
-        if(confirm("O'chirilsinmi?")) { jsonpRequest(WEB_APP_URL, { action: "delete", id: id }).then(() => yuklash()); }
+        if(confirm("Ushbu buyurtmani bazadan butunlay o'chirmoqchimisiz?")) { jsonpRequest(WEB_APP_URL, { action: "delete", id: id }).then(() => yuklash()); }
     }
 
     window.onload = function() { odamSelectlariniYangilash(); yuklash(); };
