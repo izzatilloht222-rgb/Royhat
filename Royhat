@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To'ylar va Marosimlar Hisob Tizimi v5.7</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --success: #27ae60;
+            --danger: #c0392b;
+            --warning: #d35400;
+            --info: #2980b9;
+            --purple: #8e44ad;
+            --dark-blue: #34495e;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #eef2f3;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+        h2 {
+            text-align: center;
+            color: var(--primary);
+            margin-bottom: 25px;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 3fr;
+            gap: 20px;
+        }
+        @media (max-width: 1100px) {
+            .grid { grid-template-columns: 1fr; }
+        }
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 12px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .btn-main {
+            width: 100%;
+            padding: 10px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .btn-main:hover { background: #1a252f; }
+        
+        .stats {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .stat-box {
+            flex: 1;
+            padding: 15px;
+            border-radius: 6px;
+            text-align: center;
+            color: white;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        .stat-paid { background: var(--success); }
+        .stat-unpaid { background: var(--danger); }
+        .stat-syomka { background: var(--purple); }
+        
+        .filter-section {
+            background: #dcdde1;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .filter-section label { margin-bottom: 0; }
+        .filter-section select { width: auto; min-width: 250px; padding: 6px; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+            font-size: 13px;
+        }
+        th { background: var(--primary); color: white; }
+        tr:hover { background: #f1f1f1; }
+        
+        .badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            color: white;
+            font-size: 11px;
+            font-weight: bold;
+            display: inline-block;
+        }
+        .badge-paid { background: var(--success); }
+        .badge-unpaid { background: var(--danger); }
+        .badge-yes { background: var(--info); }
+        .badge-no { background: #7f8c8d; }
+        
+        .location-text {
+            font-size: 11px;
+            color: #555;
+            background: #f1f2f6;
+            padding: 3px 6px;
+            border-radius: 4px;
+            border-left: 3px solid var(--dark-blue);
+            word-break: break-all;
+            max-width: 150px;
+        }
+
+        .btn-action {
+            padding: 4px 6px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 2px;
+            display: block;
+            width: 100%;
+            text-align: center;
+        }
+        .btn-toggle { background: var(--warning); }
+        .btn-flash { background: #8e44ad; }
+        .btn-loc-change { background: #16a085; }
+        .btn-delete { background: var(--danger); }
+
+        .odam-list {
+            margin-top: 10px;
+            max-height: 150px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 5px;
+            border-radius: 4px;
+        }
+        .odam-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 4px;
+            border-bottom: 1px solid #eee;
+            font-size: 13px;
+        }
+        .btn-mini-delete {
+            background: var(--danger);
+            color: white;
+            border: none;
+            padding: 2px 6px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 10px;
+        }
+        .btn-add-mini {
+            width: auto;
+            white-space: nowrap;
+            padding: 0 15px;
+            background: var(--success);
+        }
+        .btn-add-mini:hover { background: #1e7e34; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>To'y va Marosimlar Hisob Tizimi 🔐 (Admin Panel v5.7)</h2>
+    
+    <div class="grid">
+        <div>
+            <div class="card">
+                <h3>Yangi To'y Qo'shish</h3>
+                <form id="toyForm">
+                    <div class="form-group">
+                        <label>To'yni kimdan oldingiz?:</label>
+                        <select id="kamerachiEgasi" required onchange="checkOzim()">
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Mijoz (To'y egasi ismi):</label>
+                        <input type="text" id="mijoz" required placeholder="Masalan: Dilshodbek xonadoni">
+                    </div>
+                    <div class="form-group">
+                        <label>To'y Sanasi:</label>
+                        <input type="date" id="sana" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Turi:</label>
+                        <select id="turi">
+                            <option value="Uylanish to'yi">Uylanish to'yi</option>
+                            <option value="Vecher">Vecher</option>
+                            <option value="Shukrona">Shukrona</option>
+                            <option value="Boshqa">Boshqa marosim</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Kameralar soni:</label>
+                        <select id="kameralar">
+                            <option value="1 ta kamera">1 ta kamera</option>
+                            <option value="2 ta kamera">2 ta kamera</option>
+                            <option value="3 ta kamera">3 ta kamera</option>
+                            <option value="Kamerasiz">Kamerasiz</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Xizmat Haqqi (Jami):</label>
+                        <input type="number" id="narx" required placeholder="Masalan: 200">
+                    </div>
+                    
+                    <div class="form-group" id="syomkaPuliBlock" style="display: none; background: #f1f2f6; padding: 10px; border-radius: 4px; border-left: 4px solid var(--purple);">
+                        <label style="color: var(--purple);">Syomka puli (O'zingiz uchun):</label>
+                        <input type="number" id="syomkaPuli" value="0" placeholder="Masalan: 50">
+                    </div>
+
+                    <div class="form-group">
+                        <label>To'lov Holati:</label>
+                        <select id="tolov">
+                            <option value="Berdi">Pulini Berdi</option>
+                            <option value="Bermadi">Bermadi (Qarzdor)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Fleshkaga yozildimi?:</label>
+                        <select id="fleshka">
+                            <option value="Yozilmadi">Yozilmadi</option>
+                            <option value="Yozib berildi">Yozib berildi</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Xom material joylashuvi (Vint/Papka):</label>
+                        <input type="text" id="xomJoyi" placeholder="Masalan: Vint 2 / To'ylar papkasi">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Tayyor material joylashuvi (Vint/Papka):</label>
+                        <input type="text" id="tayyorJoyi" placeholder="Masalan: Vint 1 / Tayyorlanganlar">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Qo'shimcha Izoh:</label>
+                        <textarea id="izoh" rows="2" placeholder="Fleshka kimda qoldi va hk..."></textarea>
+                    </div>
+                    <button type="submit" class="btn-main">Saqlash</button>
+                </form>
+            </div>
+
+            <div class="card">
+                <h3>Odamlarni Boshqarish</h3>
+                <div class="form-group" style="display:flex; gap:5px;">
+                    <input type="text" id="yangiOdamIsmi" placeholder="Yangi ism yozing...">
+                    <button type="button" class="btn-main btn-add-mini" onclick="odamQoshish()">Qo'shish</button>
+                </div>
+                <label>Mavjud ro'yxat:</label>
+                <div class="odam-list" id="odamlarRo_yxatiKonteyner">
+                </div>
+            </div>
+        </div>
+
+        <div>
+            <div class="stats">
+                <div class="stat-box stat-paid">
+                    Jami Tushgan Pul: <span id="totalPaid">0</span>
+                </div>
+                <div class="stat-box stat-unpaid">
+                    Kutilayotgan (Qarz): <span id="totalUnpaid">0</span>
+                </div>
+                <div class="stat-box stat-syomka">
+                    Jami Syomka Puli: <span id="totalSyomka">0</span>
+                </div>
+            </div>
+
+            <div class="filter-section">
+                <label><strong>Kamerachi bo'yicha ajratish (Filtr):</strong></label>
+                <select id="filtrKamerachi" onchange="yuklash()">
+                </select>
+            </div>
+
+            <div class="card" style="overflow-x:auto;">
+                <h3>Buyurtmalar Ro'yxati</h3>
+                <table id="toyTable">
+                    <thead>
+                        <tr>
+                            <th>Kimdan olindi</th>
+                            <th>Mijoz (To'y)</th>
+                            <th>Sana</th>
+                            <th>Turi</th>
+                            <th>Kameralar</th>
+                            <th>Xizmat Haqqi</th>
+                            <th>Syomka Puli</th>
+                            <th>To'lov</th>
+                            <th>Fleshka</th>
+                            <th>Xom Joylashuvi</th>
+                            <th>Tayyor Joylashuvi</th>
+                            <th>Izoh</th>
+                            <th>Amallar</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 🔗 O'ZINGIZNING APP SCRIPT `/exec` HAVOLANGIZNI SHU YERGA QO'YING:
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwWXdPcNe-zJnplY9XarCfRGq6i8rUB99vlkMznYGMpUlBiU42XFKkFsinNMrKpgEZqUw/exec";
+
+    const ADMINLAR = {
+        "Izzatilloh": "26082010",
+        "Marufjon": "112233",
+        "admin": "87654"
+    };
+
+    function adminTekshirish() {
+        const login = prompt("Admin loginini kiriting:");
+        if (!login) return false;
+        if (ADMINLAR[login]) {
+            const parol = prompt(`"${login}" uchun maxfiy parolni kiriting:`);
+            if (parol === ADMINLAR[login]) return true;
+            alert("Xato parol!"); return false;
+        }
+        alert("Bunday admin yo'q!"); return false;
+    }
+
+    const boshlangichOdamlar = ["Bahodir aka", "Bahtiyor aka", "Asad aka Retro", "Asad aka Oq ko'prik", "Isroil aka", "Ismoil aka", "O'zim"];
+    function getOdamlar() {
+        let odamlar = JSON.parse(localStorage.getItem('kamerachilar'));
+        if(!odamlar) { localStorage.setItem('kamerachilar', JSON.stringify(boshlangichOdamlar)); odamlar = boshlangichOdamlar; }
+        return odamlar;
+    }
+
+    function odamSelectlariniYangilash() {
+        const odamlar = getOdamlar();
+        const selectForm = document.getElementById('kamerachiEgasi');
+        const selectFiltr = document.getElementById('filtrKamerachi');
+        const konteyner = document.getElementById('odamlarRo_yxatiKonteyner');
+        let joriyTanlangan = selectForm.value;
+        selectForm.innerHTML = '';
+        odamlar.forEach(odam => { selectForm.innerHTML += `<option value="${odam}">${odam}</option>`; });
+        if(joriyTanlangan) selectForm.value = joriyTanlangan;
+        let joriyFiltr = selectFiltr.value || "Hammasi";
+        selectFiltr.innerHTML = '<option value="Hammasi">-- Barcha to\'ylar ro\'yxati --</option>';
+        odamlar.forEach(odam => { selectFiltr.innerHTML += `<option value="${odam}">${odam}</option>`; });
+        selectFiltr.value = joriyFiltr;
+        konteyner.innerHTML = '';
+        odamlar.forEach(odam => {
+            const deleteBtn = odam !== "O'zim" ? `<button class="btn-mini-delete" onclick="odamOchirish('${odam}')">O'chirish</button>` : '';
+            konteyner.innerHTML += `<div class="odam-item"><span>${odam}</span>${deleteBtn}</div>`;
+        });
+        checkOzim();
+    }
+
+    function odamQoshish() {
+        if (!adminTekshirish()) return;
+        const input = document.getElementById('yangiOdamIsmi');
+        const ism = input.value.trim();
+        if(!ism) return;
+        let odamlar = getOdamlar();
+        if(odamlar.includes(ism)) { alert("Bu ism bor!"); return; }
+        odamlar.push(ism);
+        localStorage.setItem('kamerachilar', JSON.stringify(odamlar));
+        input.value = '';
+        odamSelectlariniYangilash();
+    }
+
+    function odamOchirish(ism) {
+        if (!adminTekshirish()) return;
+        if(confirm(`${ism}ni o'chirmoqchimisiz?`)) {
+            let odamlar = getOdamlar();
+            odamlar = odamlar.filter(o => o !== ism);
+            localStorage.setItem('kamerachilar', JSON.stringify(odamlar));
+            odamSelectlariniYangilash();
+            yuklash();
+        }
+    }
+
+    function checkOzim() {
+        const egasi = document.getElementById('kamerachiEgasi').value;
+        const block = document.getElementById('syomkaPuliBlock');
+        if (egasi === "O'zim") { block.style.display = "block"; } else { block.style.display = "none"; document.getElementById('syomkaPuli').value = "0"; }
+    }
+
+    function jsonpRequest(url, params) {
+        return new Promise((resolve, reject) => {
+            const callbackId = 'jsonp_' + Date.now() + '_' + Math.floor(Math.random() * 10000);
+            window[callbackId] = function(data) {
+                resolve(data);
+                delete window[callbackId];
+                document.body.removeChild(script);
+            };
+            
+            let queryString = '?callback=' + callbackId;
+            for (let key in params) {
+                queryString += '&' + key + '=' + encodeURIComponent(params[key]);
+            }
+            
+            const script = document.createElement('script');
+            script.src = url + queryString;
+            script.onerror = function() {
+                reject(new Error("Ulanishda xato yuz berdi."));
+                delete window[callbackId];
+                document.body.removeChild(script);
+            };
+            document.body.appendChild(script);
+        });
+    }
+
+    document.getElementById('toyForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const submitBtn = this.querySelector('button[type="submit"]');
+        submitBtn.innerText = "Yuborilmoqda..."; submitBtn.disabled = true;
+
+        const params = {
+            action: "add", id: Date.now(),
+            kamerachiEgasi: document.getElementById('kamerachiEgasi').value,
+            mijoz: document.getElementById('mijoz').value,
+            sana: document.getElementById('sana').value,
+            turi: document.getElementById('turi').value,
+            kameralar: document.getElementById('kameralar').value,
+            narx: parseFloat(document.getElementById('narx').value) || 0,
+            syomkaPuli: parseFloat(document.getElementById('syomkaPuli').value) || 0,
+            tolov: document.getElementById('tolov').value,
+            fleshka: document.getElementById('fleshka').value,
+            xomJoyi: document.getElementById('xomJoyi').value || '-',
+            tayyorJoyi: document.getElementById('tayyorJoyi').value || '-',
+            izoh: document.getElementById('izoh').value
+        };
+
+        jsonpRequest(WEB_APP_URL, params)
+        .then(() => {
+            alert("Muvaffaqiyatli saqlandi!");
+            document.getElementById('toyForm').reset();
+            checkOzim();
+            yuklash();
+        })
+        .catch(err => alert("Xatolik: " + err.message))
+        .finally(() => { submitBtn.innerText = "Saqlash"; submitBtn.disabled = false; });
+    });
+
+    function yuklash() {
+        const tableBody = document.querySelector('#toyTable tbody');
+        tableBody.innerHTML = '<tr><td colspan="13" style="text-align:center;">Yuklanmoqda...</td></tr>';
+        
+        jsonpRequest(WEB_APP_URL, { action: "get", _ts: Date.now() })
+        .then(toylar => {
+            if (toylar.error) { throw new Error(toylar.error); }
+            tableBody.innerHTML = '';
+            const filtr = document.getElementById('filtrKamerachi').value;
+            let tushgan = 0, qarz = 0, jamiSyomka = 0;
+            
+            toylar.sort((a, b) => new Date(a.Sana) - new Date(b.Sana));
+
+            toylar.forEach(toy => {
+                if (filtr !== 'Hammasi' && toy.Kamerachi !== filtr) return;
+                let narx = parseFloat(toy.Narx) || 0, sPuli = parseFloat(toy["Syomka Puli"]) || 0;
+                if (toy.Tolv === 'Berdi') { tushgan += narx; } else { qarz += narx; }
+                jamiSyomka += sPuli;
+                const tolovBadge = toy.Tolv === 'Berdi' ? 'badge-paid' : 'badge-unpaid';
+                const fleshkaBadge = toy.Fleshka === 'Yozib berildi' ? 'badge-yes' : 'badge-no';
+
+                tableBody.innerHTML += `<tr>
+                    <td style="color:var(--info); font-weight:bold;">${toy.Kamerachi}</td>
+                    <td><strong>${toy.Mijoz}</strong></td>
+                    <td>${toy.Sana ? toy.Sana.substring(0,10) : ''}</td>
+                    <td>${toy.Turi}</td>
+                    <td>${toy.Kameralar}</td>
+                    <td>${narx}</td>
+                    <td style="color:var(--purple); font-weight:bold;">${sPuli}</td>
+                    <td><span class="badge ${tolovBadge}">${toy.Tolv}</span></td>
+                    <td><span class="badge ${fleshkaBadge}">${toy.Fleshka || 'Yozilmadi'}</span></td>
+                    <td><div class="location-text">${toy.XomJoyi || '-'}</div></td>
+                    <td><div class="location-text">${toy.TayyorJoyi || '-'}</div></td>
+                    <td><small>${toy.Izoh || '-'}</small></td>
+                    <td>
+                        <button class="btn-action btn-toggle" onclick="toggleTolov(${toy.ID}, '${toy.Tolv}')">Pulini O'zgartirish</button>
+                        <button class="btn-action btn-flash" onclick="toggleFleshka(${toy.ID}, '${toy.Fleshka}')">Fleshkani O'zgartirish</button>
+                        <button class="btn-action btn-loc-change" onclick="changeLocation(${toy.ID}, '${toy.XomJoyi || '-'}', '${toy.TayyorJoyi || '-'}')">Joyini O'zgartirish</button>
+                        <button class="btn-action btn-delete" onclick="ochirish(${toy.ID})">O'chirish</button>
+                    </td>
+                </tr>`;
+            });
+            document.getElementById('totalPaid').innerText = tushgan;
+            document.getElementById('totalUnpaid').innerText = qarz;
+            document.getElementById('totalSyomka').innerText = jamiSyomka;
+        })
+        .catch(err => {
+            tableBody.innerHTML = '<tr><td colspan="13" style="text-align:center; color:red;">Hozircha jadval bo\'sh yoki ulanishda xato. Ma\'lumot qo\'shib ko\'ring!</td></tr>';
+        });
+    }
+
+    function toggleTolov(id, joriyHolat) {
+        if (!adminTekshirish()) return;
+        const yangiHolat = joriyHolat === 'Berdi' ? 'Bermadi' : 'Berdi';
+        jsonpRequest(WEB_APP_URL, { action: "update", type: "tolov", id: id, value: yangiHolat }).then(() => yuklash());
+    }
+    function toggleFleshka(id, joriyHolat) {
+        if (!adminTekshirish()) return;
+        const yangiHolat = joriyHolat === 'Yozib berildi' ? 'Yozilmadi' : 'Yozib berildi';
+        jsonpRequest(WEB_APP_URL, { action: "update", type: "fleshka", id: id, value: yangiHolat }).then(() => yuklash());
+    }
+    function changeLocation(id, joriyXom, joriyTayyor) {
+        if (!adminTekshirish()) return;
+        const yangiXom = prompt("Yangi XOM joylashuvi:", joriyXom); if (yangiXom === null) return;
+        const yangiTayyor = prompt("Yangi TAYYOR joylashuvi:", joriyTayyor); if (yangiTayyor === null) return;
+        jsonpRequest(WEB_APP_URL, { action: "update", type: "joylashuvlar", id: id, xom: yangiXom, tayyor: yangiTayyor }).then(() => yuklash());
+    }
+    function ochirish(id) {
+        if (!adminTekshirish()) return;
+        if(confirm("O'chirilsinmi?")) { jsonpRequest(WEB_APP_URL, { action: "delete", id: id }).then(() => yuklash()); }
+    }
+
+    window.onload = function() { odamSelectlariniYangilash(); yuklash(); };
+</script>
+</body>
+</html>
